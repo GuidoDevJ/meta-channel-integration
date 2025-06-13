@@ -23,7 +23,7 @@ export class MessageEntity {
   @Column({ type: 'datetime' })
   timestamp: Date;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   messageId: string;
 
   @Column({ type: 'text', nullable: true })
