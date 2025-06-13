@@ -1,0 +1,100 @@
+openapi: 3.0.3
+info:
+  title: API de Integracion con Meta
+  version: 1.0.0
+
+paths:
+  /send-message:
+    post:
+      summary: Envía un mensaje a Facebook o Instagram
+      description: Envía un mensaje de texto a un usuario específico usando el token y plataforma indicados.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+            example:
+              recipientId: '23924180057212448'
+              message: 'Hola, todo bien y vos'
+              platform: 'facebook'
+              token: 'EAAWtgKymQLgBOwQ5ZCwKrGudvyksw2scbxcYV98dCuZALdaTaoXboDctDraDCkaUfiONpFftGqv83oRFKnd0fhVZBCZCvbbjM5LpIwMYQA97ZCvqdmsD4U1S73ZCPYdbXTuZAR0puDaAz32zI0htbanu1y1zjbfqPMg9FCpkuNzIqlM4D45hSZCQloyPlwZCe38STkBex'
+      responses:
+        '200':
+          description: Mensaje enviado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendMessageResponse'
+              example:
+                success: true
+                platform: 'facebook'
+                recipientId: '23924180057212448'
+        '400':
+          description: Parámetros inválidos o faltantes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: 'Parámetros inválidos'
+        '500':
+          description: Error interno al enviar mensaje
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: 'Error interno en el servidor'
+
+components:
+  schemas:
+    SendMessageRequest:
+      type: object
+      required:
+        - recipientId
+        - message
+        - platform
+        - token
+      properties:
+        recipientId:
+          type: string
+          description: ID del receptor del mensaje (PSID o Instagram ID)
+          example: '23924180057212448'
+        message:
+          type: string
+          description: Texto del mensaje a enviar
+          example: 'Hola, todo bien y vos'
+        platform:
+          type: string
+          description: Plataforma destino (facebook o instagram)
+          enum:
+            - facebook
+            - instagram
+          example: facebook
+        token:
+          type: string
+          description: Token de acceso válido para la plataforma y cuenta
+          example: 'EAAWtgKymQLgBOwQ5ZCwKrGudvyksw2scbxcYV98dCuZALdaTaoXboDctDraDCkaUfiONpFftGqv83oRFKnd0fhVZBCZCvbbjM5LpIwMYQA97ZCvqdmsD4U1S73ZCPYdbXTuZAR0puDaAz32zI0htbanu1y1zjbfqPMg9FCpkuNzIqlM4D45hSZCQloyPlwZCe38STkBex'
+    SendMessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indica si el mensaje fue enviado con éxito
+          example: true
+        platform:
+          type: string
+          description: Plataforma a la que se envió el mensaje
+          example: facebook
+        recipientId:
+          type: string
+          description: ID del receptor del mensaje
+          example: '23924180057212448'
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Mensaje de error
+          example: 'Parámetros inválidos'
