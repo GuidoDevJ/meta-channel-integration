@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:11
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: tu_contraseña_segura
+      MARIADB_DATABASE: nombre_de_tu_base
+      MARIADB_USER: usuario
+      MARIADB_PASSWORD: contraseña_usuario
+    ports:
+      - '3306:3306'
