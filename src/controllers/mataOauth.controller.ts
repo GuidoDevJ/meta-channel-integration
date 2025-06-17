@@ -20,9 +20,6 @@ export const metaOauthCallback = async (
     const { code } = req.query as { code: string; state: string };
     const result = await metaOauthService.handleCallback(code, 'facebook');
 
-    // Aquí podrías persistir result si tienes una base de datos
-    // await Channel.query().insert({ ...result });
-
     return res.redirect('/success');
   } catch (error) {
     next(error);

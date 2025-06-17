@@ -23,6 +23,8 @@ export class Company {
 
   @Column({ name: 'instagram_business_id', nullable: true })
   instagramBusinessId: string;
+  @Column({ name: 'whatsapp_business_id', nullable: true ,default:""})
+  whatsappBusinessId: string;
 
   @Column({ name: 'access_token', type: 'text' })
   accessToken: string;

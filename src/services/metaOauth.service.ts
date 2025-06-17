@@ -105,7 +105,15 @@ export class MetaOauthService {
           params: { access_token: accessToken },
         }
       );
+      const bussines = await axios.get(
+        'https://graph.facebook.com/v19.0/me/businesses',
+        {
+          params: { access_token: accessToken },
+        }
+      );
+      console.log('bussiness', bussines.data);
       return {
+        whatsappBussinessId: bussines.data.data[0].id,
         businessId: pages.data.data[0].id,
         companyName: pages.data.data[0].name,
         companyAccessToken: pages.data.data[0].access_token,
@@ -129,6 +137,69 @@ export class MetaOauthService {
     return igAccountRes.data.instagram_business_account?.id;
   }
 
+  async getWhatsappDataFromBusiness(businessId: string, accessToken: string) {
+    try {
+      // Paso 1: Obtener el WABA vinculado al business
+      const wabaRes = await axios.get(
+        `https://graph.facebook.com/v19.0/${businessId}/whatsapp_business_accounts`,
+        {
+          params: {
+            access_token: accessToken,
+          },
+        }
+      );
+
+      const wabas = wabaRes.data?.data || [];
+      if (wabas.length === 0) {
+        return {
+          whatsappBusinessId: null,
+          phoneNumberId: null,
+          displayPhoneNumber: null,
+        };
+      }
+
+      const whatsappBusinessId = wabas[0].id;
+
+      // Paso 2: Obtener phone_number_id asociado a ese WABA
+      const phoneRes = await axios.get(
+        `https://graph.facebook.com/v19.0/${whatsappBusinessId}/phone_numbers`,
+        {
+          params: {
+            access_token: accessToken,
+          },
+        }
+      );
+
+      const phones = phoneRes.data?.data || [];
+      if (phones.length === 0) {
+        return {
+          whatsappBusinessId,
+          phoneNumberId: null,
+          displayPhoneNumber: null,
+        };
+      }
+
+      const { id: phoneNumberId, display_phone_number: displayPhoneNumber } =
+        phones[0];
+
+      return {
+        whatsappBusinessId,
+        phoneNumberId,
+        displayPhoneNumber,
+      };
+    } catch (error: any) {
+      console.error(
+        'Error al obtener datos de WhatsApp:',
+        error?.response?.data || error
+      );
+      return {
+        whatsappBusinessId: null,
+        phoneNumberId: null,
+        displayPhoneNumber: null,
+      };
+    }
+  }
+
   async handleCallback(
     code: string,
     type: 'whatsapp' | 'instagram' | 'facebook' = 'facebook'
@@ -142,7 +213,7 @@ export class MetaOauthService {
     const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
     // Paso 3: Obtener businessId, companyName y companyAccessToken según el tipo
-    const { businessId, companyName, companyAccessToken } =
+    const { businessId, companyName, companyAccessToken, whatsappBussinessId } =
       await this.getBusinessIdAndCompanyData(accessToken, type);
 
     // Paso 4: Obtener instagram_business_account si existe
@@ -150,19 +221,15 @@ export class MetaOauthService {
       businessId,
       companyAccessToken
     );
-
-    console.log({
-      companyName,
-      type,
-      businessId,
-      accessToken,
-      expiresAt,
-      igAccountId,
-      companyAccessToken,
-    });
+    // Paso 5: Obtener WhatsApp Business Account (WABA ID)
+    const { whatsappBusinessId } = await this.getWhatsappDataFromBusiness(
+      whatsappBussinessId,
+      companyAccessToken
+    );
     await this.companyRepository.create({
       name: companyName,
       type,
+      whatsappBusinessId,
       businessId,
       accessToken,
       instagramBusinessId: igAccountId,

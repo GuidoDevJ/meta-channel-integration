@@ -10,17 +10,18 @@ export class SendMessageController {
 
   sendMessage = async (req: Request, res: Response) => {
     const { recipientId, message, platform, token } = req.body;
-    if (!['facebook', 'instagram'].includes(platform)) {
+    if (!['facebook', 'instagram', 'whatsapp'].includes(platform)) {
       return res.status(400).json({ error: 'Plataforma inválida' });
     }
 
     try {
-      await this.messageService.sendMessage(
+      await this.messageService.sendMessage({
         recipientId,
-        message,
+        messageType: 'text',
+        content: message,
         platform,
-        token as string
-      );
+        token,
+      });
       return res.status(200).json({ success: true, platform, recipientId });
     } catch (err: any) {
       return res
