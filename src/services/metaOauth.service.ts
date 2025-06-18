@@ -136,7 +136,29 @@ export class MetaOauthService {
     );
     return igAccountRes.data.instagram_business_account?.id;
   }
-
+  async renovateLongToken(longLivedUserToken: string): Promise<string> {
+    try {
+      const response = await axios.get(
+        'https://graph.facebook.com/v19.0/oauth/access_token',
+        {
+          params: {
+            grant_type: 'fb_exchange_token',
+            client_id: APP_ID,
+            client_secret: APP_SECRET,
+            fb_exchange_token: longLivedUserToken,
+          },
+        }
+      );
+      const nuevoToken = response.data.access_token;
+      return nuevoToken;
+    } catch (error: any) {
+      console.error(
+        '❌ Error al renovar el token de larga duración:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }
   async getWhatsappDataFromBusiness(businessId: string, accessToken: string) {
     try {
       // Paso 1: Obtener el WABA vinculado al business

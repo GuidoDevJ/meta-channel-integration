@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import metaOauthRoutes from './routes/callback/callback.route';
 import channelsRoutes from './routes/channels/channels.route';
+import renovateTokenRoutes from './routes/renovateToken/renovate.route';
 import sendMessageRoutes from './routes/sendMessages/sendMessage.route';
 import webhooksRoutes from './routes/webhook/webhook.route';
 import { bootstrap } from './utils/bootstrap';
@@ -22,6 +23,7 @@ app.use(metaOauthRoutes);
 app.use(channelsRoutes);
 app.use(webhooksRoutes);
 app.use(sendMessageRoutes);
+app.use(renovateTokenRoutes);
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${process.env.PORT}`);
 });

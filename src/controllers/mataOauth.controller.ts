@@ -9,7 +9,7 @@ import { MetaOauthService } from '../services/metaOauth.service';
  * @param {Response} res - Objeto de respuesta HTTP.
  * @param {NextFunction} next - Función para manejar errores.
  */
-export const metaOauthCallback = async (
+const metaOauthCallback = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -25,3 +25,20 @@ export const metaOauthCallback = async (
     next(error);
   }
 };
+
+const renovateToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const metaOauthService = await MetaOauthService.init();
+
+    const { accessToken } = req.body;
+    const result = await metaOauthService.renovateLongToken(accessToken);
+    res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+export { metaOauthCallback, renovateToken };
