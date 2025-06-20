@@ -5,8 +5,8 @@ const router = Router();
 
 /**
  * Ruta para manejar el renovate token de meta.
- * POST /oauth/renovaToken
+ * POST /oauth/renovateToken
  */
-router.post('/oauth/renovaToken', renovateToken);
+router.post('/oauth/renovate-token', renovateToken);
 
 export default router;

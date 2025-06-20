@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { AppDataSource } from '../db/db.connection';
+import { CompanyRepository } from '../repository/company.repository';
 
 type Platform = 'facebook' | 'instagram' | 'whatsapp';
 type MessageType = 'text' | 'image' | 'document';
@@ -8,10 +10,29 @@ interface SendMessageOptions {
   messageType: MessageType;
   content: string; // texto o URL del archivo
   platform: Platform;
-  token: string;
+  companyId: any;
+  url?: string;
+  templateName?: string;
 }
+
 export class SendMessageService {
-  constructor() {}
+  private companyRepository: CompanyRepository;
+
+  constructor() {
+    if (!AppDataSource.isInitialized) {
+      throw new Error(
+        'DataSource not initialized. Run MetaOauthService.init() first.'
+      );
+    }
+    this.companyRepository = new CompanyRepository(AppDataSource);
+  }
+
+  static async init(): Promise<SendMessageService> {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
+    return new SendMessageService();
+  }
   getSendMessageUrl(
     platform: Platform,
     bussinessId: string,
@@ -23,12 +44,17 @@ export class SendMessageService {
     }
     return `https://graph.facebook.com/v18.0/me/messages?access_token=${token}`;
   }
+
   buildMessagePayload(
     platform: Platform,
     messageType: MessageType | 'template',
     content: string,
-    recipientId: string
+    recipientId: string,
+    templateName?: string,
+    fileName?: string,
+    url?: string
   ): any {
+    console.log(recipientId);
     switch (platform) {
       case 'facebook':
       case 'instagram': {
@@ -42,14 +68,13 @@ export class SendMessageService {
         }
 
         const attachmentType = messageType === 'image' ? 'image' : 'file';
-
         return {
           recipient,
           message: {
             attachment: {
               type: attachmentType,
               payload: {
-                url: content,
+                url: url,
                 is_reusable: true,
               },
             },
@@ -58,42 +83,66 @@ export class SendMessageService {
       }
 
       case 'whatsapp': {
-        const base: any = {
+        const base = {
           messaging_product: 'whatsapp',
           to: recipientId,
-          type: 'template',
-          template: {
-            name: 'hello_world', // se espera el nombre de la plantilla como string
-            language: {
-              code: 'en_US', // podría parametrizarse si querés
-            },
-          },
         };
 
-        // switch (messageType) {
-        //   case 'text':
-        //     base.text = { body: content };
-        //     break;
+        if (messageType === 'text') {
+          return {
+            ...base,
+            type: 'text',
+            text: {
+              body: {
+                text: content,
+              },
+            },
+          };
+        }
 
-        //   case 'image':
-        //     base.image = { link: content };
-        //     break;
+        if (messageType === 'image') {
+          return {
+            ...base,
+            type: 'image',
+            image: {
+              link: content,
+            },
+          };
+        }
 
-        //   case 'document':
-        //     base.document = { link: content };
-        //     break;
+        if (messageType === 'document') {
+          return {
+            ...base,
+            type: 'document',
+            document: {
+              link: content,
+              filename: fileName || 'document.pdf',
+            },
+          };
+        }
 
-        //   case 'template':
-        //     base.template = {
-        //       name: 'hello_word', // se espera el nombre de la plantilla como string
-        //       language: {
-        //         code: 'en_US', // podría parametrizarse si querés
-        //       },
-        //     };
-        //     break;
-        // }
+        if (messageType === 'template') {
+          if (!templateName) {
+            throw new Error(
+              'Template name is required for WhatsApp template messages'
+            );
+          }
+          console.log(base);
+          return {
+            ...base,
+            type: 'template',
+            template: {
+              name: templateName,
+              language: {
+                code: 'en_US',
+              },
+            },
+          };
+        }
 
-        return base;
+        throw new Error(
+          `Tipo de mensaje no soportado para WhatsApp: ${messageType}`
+        );
       }
 
       default:
@@ -102,22 +151,33 @@ export class SendMessageService {
   }
 
   async sendMessage(options: SendMessageOptions): Promise<void> {
-    const { platform, recipientId, token, messageType, content } = options;
-
+    const {
+      platform,
+      recipientId,
+      messageType,
+      content,
+      companyId,
+      templateName,
+      url: pdfImageUrl,
+    } = options;
+    const company = await this.companyRepository.findByBusinessId(companyId);
+    const token = company?.companyAccessToken as string;
     try {
       const url = this.getSendMessageUrl(platform, recipientId, token);
       const body = this.buildMessagePayload(
         platform,
         messageType,
         content,
-        recipientId
+        recipientId,
+        templateName as string,
+        '',
+        pdfImageUrl
       );
 
       const headers =
         platform === 'whatsapp'
           ? { Authorization: `Bearer ${token}` }
           : undefined;
-      console.log(body);
       await axios.post(url, body, { headers });
 
       console.log(

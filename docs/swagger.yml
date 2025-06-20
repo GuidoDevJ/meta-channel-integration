@@ -4,48 +4,198 @@ info:
   version: 1.0.0
 
 paths:
-  /send-message:
+  /send-message/{companyId}:
     post:
-      summary: Envía un mensaje a Facebook o Instagram
-      description: Envía un mensaje de texto a un usuario específico usando el token y plataforma indicados.
+      summary: Enviar mensaje a un destinatario desde una plataforma conectada
+      description: Envía un mensaje a través de una plataforma (ej. Facebook) utilizando la configuración de canal asociada a la empresa.
+      tags:
+        - Mensajes
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID interno de la empresa
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SendMessageRequest'
-            example:
-              recipientId: '23924180057212448'
-              message: 'Hola, todo bien y vos'
-              platform: 'facebook'
-              token: 'EAAWtgKymQLgBOwQ5ZCwKrGudvyksw2scbxcYV98dCuZALdaTaoXboDctDraDCkaUfiONpFftGqv83oRFKnd0fhVZBCZCvbbjM5LpIwMYQA97ZCvqdmsD4U1S73ZCPYdbXTuZAR0puDaAz32zI0htbanu1y1zjbfqPMg9FCpkuNzIqlM4D45hSZCQloyPlwZCe38STkBex'
+              type: object
+              required:
+                - recipientId
+                - message
+                - platform
+              properties:
+                recipientId:
+                  type: string
+                  description: ID del destinatario en la plataforma
+                  example: '23924180057212448'
+                message:
+                  type: string
+                  description: Texto del mensaje a enviar
+                  example: 'Hola, todo bien y vos'
+                platform:
+                  type: string
+                  enum: [facebook, instagram, whatsapp]
+                  description: Plataforma a través de la cual se enviará el mensaje
+                  example: 'facebook'
       responses:
         '200':
           description: Mensaje enviado correctamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SendMessageResponse'
-              example:
-                success: true
-                platform: 'facebook'
-                recipientId: '23924180057212448'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  platform:
+                    type: string
+                    example: 'facebook'
+                  recipientId:
+                    type: string
+                    example: '23924180057212448'
         '400':
-          description: Parámetros inválidos o faltantes
+          description: Error en el envío del mensaje
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: 'Parámetros inválidos'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error al enviar el mensaje
+  /oauth/renovate-token:
+    post:
+      tags:
+        - OAuth
+      summary: Renueva el token de acceso OAuth
+      description: >
+        Este endpoint permite renovar el token de acceso utilizando un `refresh_token` válido.
+        Devuelve un nuevo `access_token` y opcionalmente un nuevo `refresh_token`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  description: Token de actualización emitido previamente
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Token renovado correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: Nuevo token de acceso
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          description: Solicitud inválida (token faltante o malformado)
+        '401':
+          description: Token de actualización inválido o expirado
         '500':
-          description: Error interno al enviar mensaje
+          description: Error interno del servidor
+  /whatsapp/send-message/{companyId}:
+    post:
+      tags:
+        - WhatsApp
+      summary: Envía una plantilla de mensaje a través de WhatsApp
+      description: >
+        Este endpoint envía un mensaje basado en una plantilla predefinida de WhatsApp utilizando un token válido.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - receiverId
+                - templateName
+                - platform
+              properties:
+                token:
+                  type: string
+                  description: Token de acceso de la cuenta de WhatsApp Business
+                  example: EAAWtgKymQLgBO9lJBHtvWijyXCssr8MOnh9Nk5OWC64...
+                receiverId:
+                  type: string
+                  description: Número de WhatsApp del destinatario (en formato internacional sin `+`)
+                  example: '543794143341'
+                templateName:
+                  type: string
+                  description: Nombre de la plantilla de mensaje aprobada por Meta
+                  example: hello_world
+                platform:
+                  type: string
+                  enum: [whatsapp]
+                  description: Plataforma desde la cual se envía el mensaje
+                  example: whatsapp
+      responses:
+        '200':
+          description: Mensaje enviado correctamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: 'Error interno en el servidor'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  platform:
+                    type: string
+                    example: whatsapp
+        '400':
+          description: Datos inválidos en la solicitud
+        '401':
+          description: Token inválido o expirado
+        '500':
+          description: Error interno al enviar la plantilla
+  /channels/meta/link:
+    get:
+      summary: Inicia la vinculación OAuth con Meta
+      description: Redirige al usuario al login de Facebook para vincular una cuenta Meta. Se requiere el ID de la empresa (`companyId`) como query param para asociar el proceso.
+      tags:
+        - Channels
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID interno de la empresa para asociar el canal Meta.
+      responses:
+        '302':
+          description: Redirección al login de Meta/Facebook (OAuth)
+          headers:
+            Location:
+              description: URL de redirección al login de Meta
+              schema:
+                type: string
+                format: uri
+              example: https://www.facebook.com/v19.0/dialog/oauth?client_id=123...
+        '400':
+          description: Error al generar la URL de autorización
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error al generar la URL de OAuth
 
 components:
   schemas:

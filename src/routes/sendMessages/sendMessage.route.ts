@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { SendMessageController } from '../../controllers/sendMessages.controller';
 const router = Router();
+const upload = multer({ dest: 'uploads/' });
 
 const controller = new SendMessageController();
 
@@ -26,6 +28,6 @@ const controller = new SendMessageController();
  * }
  */
 
-router.post('/sendMessage', controller.sendMessage as any);
+router.post('/send-message/:companyId', controller.sendMessage as any);
 
 export default router;

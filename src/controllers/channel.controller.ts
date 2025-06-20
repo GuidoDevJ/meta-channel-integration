@@ -18,15 +18,12 @@ export class ChannelController {
     req: Request,
     res: Response
   ): Promise<void> => {
-    const { type } = req.params;
-    const { companyId, name } = req.query;
+    const { companyId } = req.query;
 
     try {
-      const url = await this.channelService.createMetaChannel({
-        companyId: companyId as string,
-        type: type as 'whatsapp' | 'instagram' | 'facebook',
-        name: name as string,
-      });
+      const url = await this.channelService.createMetaChannel(
+        companyId as string
+      );
 
       res.redirect(url);
     } catch (err) {

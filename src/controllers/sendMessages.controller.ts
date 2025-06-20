@@ -2,25 +2,24 @@ import { Request, Response } from 'express';
 import { SendMessageService } from '../services/sendMessage.service';
 
 export class SendMessageController {
-  private readonly messageService: SendMessageService;
-
-  constructor() {
-    this.messageService = new SendMessageService();
-  }
-
   sendMessage = async (req: Request, res: Response) => {
-    const { recipientId, message, platform, token } = req.body;
+    const messageService = await SendMessageService.init();
+
+    const { recipientId, message, platform, templateName, type, url } =
+      req.body;
+    const { companyId } = req.query;
     if (!['facebook', 'instagram', 'whatsapp'].includes(platform)) {
       return res.status(400).json({ error: 'Plataforma inválida' });
     }
-
     try {
-      await this.messageService.sendMessage({
+      await messageService.sendMessage({
         recipientId,
-        messageType: 'text',
+        messageType: type,
         content: message,
         platform,
-        token,
+        companyId,
+        templateName,
+        url,
       });
       return res.status(200).json({ success: true, platform, recipientId });
     } catch (err: any) {

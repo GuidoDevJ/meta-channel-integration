@@ -111,7 +111,6 @@ export class MetaOauthService {
           params: { access_token: accessToken },
         }
       );
-      console.log('bussiness', bussines.data);
       return {
         whatsappBussinessId: bussines.data.data[0].id,
         businessId: pages.data.data[0].id,
@@ -136,7 +135,7 @@ export class MetaOauthService {
     );
     return igAccountRes.data.instagram_business_account?.id;
   }
-  async renovateLongToken(longLivedUserToken: string): Promise<string> {
+  async renovateLongToken(longLivedUserToken: string) {
     try {
       const response = await axios.get(
         'https://graph.facebook.com/v19.0/oauth/access_token',
@@ -149,8 +148,10 @@ export class MetaOauthService {
           },
         }
       );
-      const nuevoToken = response.data.access_token;
-      return nuevoToken;
+      const newToken = response.data.access_token;
+      return {
+        accessToken: newToken,
+      };
     } catch (error: any) {
       console.error(
         '❌ Error al renovar el token de larga duración:',
@@ -224,7 +225,8 @@ export class MetaOauthService {
 
   async handleCallback(
     code: string,
-    type: 'whatsapp' | 'instagram' | 'facebook' = 'facebook'
+    type: 'whatsapp' | 'instagram' | 'facebook' = 'facebook',
+    companyId: string
   ) {
     // Paso 1: Token corto
     const shortToken = await this.exchangeCodeForShortToken(code);
@@ -235,12 +237,16 @@ export class MetaOauthService {
     const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
     // Paso 3: Obtener businessId, companyName y companyAccessToken según el tipo
-    const { businessId, companyName, companyAccessToken, whatsappBussinessId } =
-      await this.getBusinessIdAndCompanyData(accessToken, type);
+    const {
+      businessId: facebookPageId,
+      companyName,
+      companyAccessToken,
+      whatsappBussinessId,
+    } = await this.getBusinessIdAndCompanyData(accessToken, type);
 
     // Paso 4: Obtener instagram_business_account si existe
     const igAccountId = await this.getInstagramBusinessAccount(
-      businessId,
+      facebookPageId,
       companyAccessToken
     );
     // Paso 5: Obtener WhatsApp Business Account (WABA ID)
@@ -252,15 +258,16 @@ export class MetaOauthService {
       name: companyName,
       type,
       whatsappBusinessId,
-      businessId,
+      facebookPageId,
       accessToken,
+      businessId: companyId,
       instagramBusinessId: igAccountId,
       companyAccessToken,
     });
     return {
       companyName,
       type,
-      businessId,
+      businessId: companyId,
       accessToken,
       expiresAt,
     };

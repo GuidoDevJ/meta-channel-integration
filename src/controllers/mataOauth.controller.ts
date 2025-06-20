@@ -17,8 +17,12 @@ const metaOauthCallback = async (
   try {
     const metaOauthService = await MetaOauthService.init();
 
-    const { code } = req.query as { code: string; state: string };
-    const result = await metaOauthService.handleCallback(code, 'facebook');
+    const { code, state } = req.query as { code: string; state: string };
+    const result = await metaOauthService.handleCallback(
+      code,
+      'facebook',
+      state
+    );
 
     return res.redirect('/success');
   } catch (error) {

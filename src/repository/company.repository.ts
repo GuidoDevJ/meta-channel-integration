@@ -48,12 +48,6 @@ export class CompanyRepository {
     return await this.repository.find({ relations: ['costs'] });
   }
 
-  async findById(id: string): Promise<Company | null> {
-    return await this.repository.findOne({
-      where: { id },
-      relations: ['costs'],
-    });
-  }
 
   async findByBusinessId(businessId: string): Promise<Company | null> {
     return await this.repository.findOneBy({ businessId });

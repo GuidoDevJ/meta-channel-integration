@@ -4,6 +4,7 @@ import metaOauthRoutes from './routes/callback/callback.route';
 import channelsRoutes from './routes/channels/channels.route';
 import renovateTokenRoutes from './routes/renovateToken/renovate.route';
 import sendMessageRoutes from './routes/sendMessages/sendMessage.route';
+import sendWhatsAppMessageRoutes from './routes/sendMessages/whatsAppMessage.route';
 import webhooksRoutes from './routes/webhook/webhook.route';
 import { bootstrap } from './utils/bootstrap';
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(metaOauthRoutes);
 app.use(channelsRoutes);
 app.use(webhooksRoutes);
 app.use(sendMessageRoutes);
+app.use(sendWhatsAppMessageRoutes);
 app.use(renovateTokenRoutes);
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${process.env.PORT}`);

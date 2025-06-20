@@ -18,10 +18,9 @@ export class MessageRepository {
    */
   public async saveMessageFromWebhook(
     entry: any,
-    platform: 'page' | 'instagram' | 'whatsApp'
+    platform: 'page' | 'instagram' | 'whatsapp_business_account'
   ): Promise<MessageEntity> {
     const data = this.transformEntryToMessage(entry, platform);
-
     try {
       return await this.repository.save(data);
     } catch (err) {
@@ -39,7 +38,7 @@ export class MessageRepository {
    */
   private transformEntryToMessage(
     entry: any,
-    platform: 'page' | 'instagram' | 'whatsApp'
+    platform: 'page' | 'instagram' | 'whatsapp_business_account'
   ): Partial<MessageEntity> {
     switch (platform) {
       case 'page': {
@@ -59,6 +58,7 @@ export class MessageRepository {
 
       case 'instagram': {
         const msg = entry?.changes?.[0]?.value;
+
         return {
           platform,
           senderId: msg.sender?.id,
@@ -71,9 +71,19 @@ export class MessageRepository {
         };
       }
 
-      case 'whatsApp': {
-        // Lógica futura o mock:
-        throw new Error('La plataforma WhatsApp aún no está soportada.');
+      case 'whatsapp_business_account': {
+        const msg = entry?.changes?.[0]?.value;
+        console.log(msg);
+        return {
+          platform,
+          senderId: msg.contacts[0]?.wa_id,
+          recipientId: msg.metadata?.phone_number_id,
+          timestamp: new Date(Number(msg.messages[0].timestamp) * 1000),
+          messageId: msg.message?.id,
+          text: msg.messages[0]?.text.body ?? null,
+          isEcho: false,
+          raw: entry,
+        };
       }
 
       default:
