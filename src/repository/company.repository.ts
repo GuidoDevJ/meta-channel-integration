@@ -48,7 +48,6 @@ export class CompanyRepository {
     return await this.repository.find({ relations: ['costs'] });
   }
 
-
   async findByBusinessId(businessId: string): Promise<Company | null> {
     return await this.repository.findOneBy({ businessId });
   }
@@ -60,7 +59,9 @@ export class CompanyRepository {
     return await this.repository.save(company);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.repository.delete(id);
+  async delete(id: string): Promise<any> {
+    return await this.repository.delete({
+      businessId: id,
+    });
   }
 }
