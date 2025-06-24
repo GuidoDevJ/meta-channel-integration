@@ -232,10 +232,9 @@ export class MetaOauthService {
     const shortToken = await this.exchangeCodeForShortToken(code);
 
     // Paso 2: Token largo
-    const { accessToken, expiresIn } =
+    const { accessToken } =
       await this.exchangeShortTokenForLongToken(shortToken);
-    const expiresAt = new Date(Date.now() + expiresIn * 1000);
-
+    const expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
     // Paso 3: Obtener businessId, companyName y companyAccessToken según el tipo
     const {
       businessId: facebookPageId,
@@ -263,6 +262,7 @@ export class MetaOauthService {
       businessId: companyId,
       instagramBusinessId: igAccountId,
       companyAccessToken,
+      tokenExpiresAt: expiresAt,
     });
     return {
       companyName,

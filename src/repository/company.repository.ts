@@ -16,6 +16,7 @@ export class CompanyRepository {
     companyAccessToken: string;
     accessToken: string;
     whatsappBusinessId: string;
+    tokenExpiresAt: Date;
     type: 'facebook' | 'instagram' | 'whatsapp';
   }): Promise<Company> {
     const company = this.repository.create(data);
