@@ -54,7 +54,6 @@ export class SendMessageService {
     fileName?: string,
     url?: string
   ): any {
-    console.log(recipientId);
     switch (platform) {
       case 'facebook':
       case 'instagram': {
@@ -89,13 +88,13 @@ export class SendMessageService {
         };
 
         if (messageType === 'text') {
+          console.log(content);
           return {
-            ...base,
+            messaging_product: 'whatsapp',
+            to: recipientId,
             type: 'text',
             text: {
-              body: {
-                text: content,
-              },
+              body: content,
             },
           };
         }

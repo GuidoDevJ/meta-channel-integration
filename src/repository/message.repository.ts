@@ -58,7 +58,6 @@ export class MessageRepository {
 
       case 'instagram': {
         const msg = entry?.changes?.[0]?.value;
-
         return {
           platform,
           senderId: msg.sender?.id,
@@ -73,7 +72,6 @@ export class MessageRepository {
 
       case 'whatsapp_business_account': {
         const msg = entry?.changes?.[0]?.value;
-        console.log(msg);
         return {
           platform,
           senderId: msg.contacts[0]?.wa_id,
