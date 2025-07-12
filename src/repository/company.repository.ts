@@ -50,7 +50,17 @@ export class CompanyRepository {
   }
 
   async findByBusinessId(businessId: string): Promise<Company | null> {
-    return await this.repository.findOneBy({ businessId });
+    return await this.repository
+    .createQueryBuilder('company')
+    .select([
+      'company.id',
+      'company.name',
+      'company.facebookPageId',
+      'company.instagramBusinessId',
+      'company.whatsappBusinessId',
+    ])
+    .where('company.businessId = :businessId', { businessId })
+    .getOne();;
   }
 
   async updateName(id: string, name: string): Promise<Company> {

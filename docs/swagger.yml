@@ -196,6 +196,96 @@ paths:
                   message:
                     type: string
                     example: Error al generar la URL de OAuth
+  /bussiness/messages:
+   get:
+     tags: 
+      - Bussiness 
+     summary: Obtener mensajes de una empresa
+     description: Retorna los mensajes vinculados a los canales de Facebook, Instagram o WhatsApp de una empresa, incluyendo plataforma, texto y timestamp.
+     parameters:
+       - in: query
+         name: bussinessId
+         required: true
+         schema:
+           type: string
+           format: uuid
+         description: ID de la empresa
+     responses:
+       200:
+         description: Lista de mensajes
+         content:
+           application/json:
+             schema:
+               type: object
+               properties:
+                 count:
+                   type: integer
+                   example: 26
+                 data:
+                   type: array
+                   items:
+                     type: object
+                     properties:
+                       id:
+                         type: integer
+                         example: 34
+                       text:
+                         type: string
+                         nullable: true
+                         example: "Hola"
+                       platform:
+                         type: string
+                         nullable: true
+                         example: "whatsapp"
+                       timestamp:
+                         type: string
+                         format: date-time
+                         example: "2025-06-20T18:44:59.000Z"
+       400:
+         description: empresaId faltante o inválido
+       500:
+         description: Error interno del servidor
+  /bussiness/{businessId}:
+    get:
+      tags: 
+      - Bussiness
+      summary: Obtener información básica de una empresa por businessId
+      parameters:
+        - in: path
+          name: businessId
+          required: true
+          schema:
+            type: string
+          description: ID del negocio (Meta Business ID)
+      responses:
+        200:
+          description: Información básica de la empresa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: d4d033e2-680e-4d2f-b6b7-38db467c0eca
+                  name:
+                    type: string
+                    example: Guido AWS
+                  facebookPageId:
+                    type: string
+                    example: 649026824966706
+                  instagramBusinessId:
+                    type: string
+                    example: 17841470291710620
+                  whatsappBusinessId:
+                    type: string
+                    nullable: true
+                    example: null
+        400:
+          description: Parámetro faltante
+        500:
+          description: Error interno del servidor
+  
 
 components:
   schemas:

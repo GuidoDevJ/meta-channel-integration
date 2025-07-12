@@ -60,6 +60,8 @@ export class SendMessageService {
         const recipient = { id: recipientId };
 
         if (messageType === 'text') {
+          console.log({recipient,
+            message: { text: content }})
           return {
             recipient,
             message: { text: content },
@@ -67,6 +69,7 @@ export class SendMessageService {
         }
 
         const attachmentType = messageType === 'image' ? 'image' : 'file';
+        
         return {
           recipient,
           message: {
@@ -126,7 +129,6 @@ export class SendMessageService {
               'Template name is required for WhatsApp template messages'
             );
           }
-          console.log(base);
           return {
             ...base,
             type: 'template',

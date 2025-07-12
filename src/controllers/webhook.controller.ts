@@ -36,10 +36,8 @@ export class WebhookController {
    */
   public async handleWebhookEvent(req: Request, res: Response): Promise<void> {
     const webhookService = await WebhookService.init();
-    console.log('hpañ');
     const body = req.body;
     const page = body.object;
-
     webhookService.processEntries(body.entry, page);
 
     res.status(200).send('EVENT_RECEIVED');

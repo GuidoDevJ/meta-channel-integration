@@ -24,7 +24,7 @@ const metaOauthCallback = async (
       state
     );
 
-    return res.redirect('/success');
+    return res.redirect(process.env.REDIRECT_FRONT as string);
   } catch (error) {
     next(error);
   }

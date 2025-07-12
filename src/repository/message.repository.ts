@@ -40,6 +40,7 @@ export class MessageRepository {
     entry: any,
     platform: 'page' | 'instagram' | 'whatsapp_business_account'
   ): Partial<MessageEntity> {
+    console.log(entry.messaging[0])
     switch (platform) {
       case 'page': {
         const msg = entry?.messaging?.[0];
@@ -57,12 +58,12 @@ export class MessageRepository {
       }
 
       case 'instagram': {
-        const msg = entry?.changes?.[0]?.value;
+        const msg = entry?.messaging?.[0];
         return {
           platform,
           senderId: msg.sender?.id,
           recipientId: msg.recipient?.id,
-          timestamp: new Date(Number(msg.timestamp) * 1000),
+          timestamp: new Date(Number(msg.timestamp)),
           messageId: msg.message?.mid,
           text: msg.message?.text ?? null,
           isEcho: false,

@@ -3,6 +3,8 @@ import express from 'express';
 import metaOauthRoutes from './routes/callback/callback.route';
 import channelsRoutes from './routes/channels/channels.route';
 import deleteCompanyRoutes from './routes/deleteSessionMeta/deleteSessionMeta.route';
+import getBussiness from './routes/getBussiness/getBussiness.route';
+import getMessages from './routes/getMessages/getMessage.route';
 import renovateTokenRoutes from './routes/renovateToken/renovate.route';
 import sendMessageRoutes from './routes/sendMessages/sendMessage.route';
 import sendWhatsAppMessageRoutes from './routes/sendMessages/whatsAppMessage.route';
@@ -28,6 +30,8 @@ app.use(sendMessageRoutes);
 app.use(sendWhatsAppMessageRoutes);
 app.use(renovateTokenRoutes);
 app.use(deleteCompanyRoutes);
+app.use(getMessages)
+app.use(getBussiness)
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${process.env.PORT}`);
 });
