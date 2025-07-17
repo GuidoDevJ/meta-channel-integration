@@ -2,6 +2,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import { AppDataSource } from '../db/db.connection';
 import { CompanyRepository } from '../repository/company.repository';
+import { InstagramProfileRepository } from '../repository/instagram.repository';
 dotenv.config();
 const APP_ID = process.env.META_APP_ID!;
 const APP_SECRET = process.env.META_APP_SECRET!;
@@ -9,7 +10,7 @@ const REDIRECT_URI = process.env.META_REDIRECT_URI!;
 
 export class MetaOauthService {
   private companyRepository: CompanyRepository;
-
+  private instagramRepository: InstagramProfileRepository;
   constructor() {
     if (!AppDataSource.isInitialized) {
       throw new Error(
@@ -17,6 +18,7 @@ export class MetaOauthService {
       );
     }
     this.companyRepository = new CompanyRepository(AppDataSource);
+    this.instagramRepository = new InstagramProfileRepository(AppDataSource);
   }
 
   static async init(): Promise<MetaOauthService> {
@@ -222,7 +224,37 @@ export class MetaOauthService {
       };
     }
   }
+async getInstagramProfileData(instagramBusinessId: string, accessToken: string,bussinessId:string) {
+  const fields = [
+    'username',
+    'profile_picture_url',
+    'biography',
+    'followers_count',
+    'follows_count',
+    'media_count',
+  ];
+  try {
+    const url = `https://graph.facebook.com/v19.0/${instagramBusinessId}}?fields=${fields.join(',')}&access_token=${accessToken}`;
+    const response = await axios.get(url);
+    const data = response.data
+    this.instagramRepository.create({
+      profilePictureUrl: data.profile_picture_url,
+      followersCount: data.followers_count,
+      username: data.username,
+      followsCount: data.follows_count,
+      bussinessId,
+      biography: data.biography,
+      mediaCount: data.media_count,
+    })
+    return await response.data;
+    
+  } catch (error:any) {
+    console.log(error.response.data)
+    throw new Error('Error fetching Instagram profile data');
+  }
 
+
+}
   async handleCallback(
     code: string,
     type: 'whatsapp' | 'instagram' | 'facebook' = 'facebook',
@@ -248,6 +280,7 @@ export class MetaOauthService {
       facebookPageId,
       companyAccessToken
     );
+    const dataProfile = await this.getInstagramProfileData(igAccountId, companyAccessToken,companyId);
     // Paso 5: Obtener WhatsApp Business Account (WABA ID)
     const { whatsappBusinessId } = await this.getWhatsappDataFromBusiness(
       whatsappBussinessId,
