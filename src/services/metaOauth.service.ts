@@ -224,37 +224,40 @@ export class MetaOauthService {
       };
     }
   }
-async getInstagramProfileData(instagramBusinessId: string, accessToken: string,bussinessId:string) {
-  const fields = [
-    'username',
-    'profile_picture_url',
-    'biography',
-    'followers_count',
-    'follows_count',
-    'media_count',
-  ];
-  try {
-    const url = `https://graph.facebook.com/v19.0/${instagramBusinessId}}?fields=${fields.join(',')}&access_token=${accessToken}`;
-    const response = await axios.get(url);
-    const data = response.data
-    this.instagramRepository.create({
-      profilePictureUrl: data.profile_picture_url,
-      followersCount: data.followers_count,
-      username: data.username,
-      followsCount: data.follows_count,
-      bussinessId,
-      biography: data.biography,
-      mediaCount: data.media_count,
-    })
-    return await response.data;
-    
-  } catch (error:any) {
-    console.log(error.response.data)
-    throw new Error('Error fetching Instagram profile data');
+  async getInstagramProfileData(
+    instagramBusinessId: string,
+    accessToken: string,
+    bussinessId: string
+  ) {
+    const fields = [
+      'username',
+      'profile_picture_url',
+      'biography',
+      'followers_count',
+      'follows_count',
+      'media_count',
+    ];
+    try {
+      const url = `https://graph.facebook.com/v19.0/${instagramBusinessId}}?fields=${fields.join(',')}&access_token=${accessToken}`;
+      const response = await axios.get(url);
+      const data = response.data;
+      this.instagramRepository.create({
+        profilePictureUrl: data.profile_picture_url,
+        followersCount: data.followers_count,
+        username: data.username,
+        followsCount: data.follows_count,
+        bussinessId,
+        biography: data.biography,
+        mediaCount: data.media_count,
+      });
+      return await response.data;
+    } catch (error: any) {
+      console.log(error.response.data);
+      console.error('Error fetching Instagram profile data:', error.message);
+      return null;
+      // throw new Error('Error fetching Instagram profile data');
+    }
   }
-
-
-}
   async handleCallback(
     code: string,
     type: 'whatsapp' | 'instagram' | 'facebook' = 'facebook',
@@ -280,7 +283,11 @@ async getInstagramProfileData(instagramBusinessId: string, accessToken: string,b
       facebookPageId,
       companyAccessToken
     );
-    const dataProfile = await this.getInstagramProfileData(igAccountId, companyAccessToken,companyId);
+    const dataProfile = await this.getInstagramProfileData(
+      igAccountId,
+      companyAccessToken,
+      companyId
+    );
     // Paso 5: Obtener WhatsApp Business Account (WABA ID)
     const { whatsappBusinessId } = await this.getWhatsappDataFromBusiness(
       whatsappBussinessId,
