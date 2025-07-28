@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { Cost } from './cost.entity';
 
-@Entity({ name: 'companies' })
+@Entity({ name: 'metaCompanies' })
 export class Company {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -23,7 +23,7 @@ export class Company {
 
   @Column({ name: 'instagram_business_id', nullable: true })
   instagramBusinessId: string;
-  @Column({ name: 'whatsapp_business_id', nullable: true ,default:""})
+  @Column({ name: 'whatsapp_business_id', nullable: true, default: '' })
   whatsappBusinessId: string;
 
   @Column({ name: 'access_token', type: 'text' })
